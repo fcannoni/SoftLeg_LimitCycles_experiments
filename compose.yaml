@@ -1,0 +1,89 @@
+services:
+  ros2_humble_softleg_experiments:
+    build:
+      context: ./docker_simulator/DockerFiles
+      dockerfile: Dockerfile
+      args:
+        - BASE_IMAGE=osrf/ros
+        - BASE_TAG=jazzy-desktop-full
+        - DISTRO=jazzy
+        - IMAGE_NAME=docker_control_simulation
+        - IMAGE_TAG=0.1
+        - WORKSPACE=docker_simulation_ws
+
+    container_name: ros2_humble_softleg_experiments
+    networks:
+      - ros2_internal
+    # network_mode: "host"
+    # Interactive shell settings
+    stdin_open: true
+    tty: true
+    # Network settings
+
+    # Environment variables
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.docker.xauth
+      - ROS_DOMAIN_ID=28
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      # Shell history
+      - HISTFILE=/home/ros/.bash_history
+      - HISTFILESIZE=10000
+      - RCUTILS_COLORIZED_OUTPUT=1
+      - IGN_VERSION=fortress
+      - IGN_GAZEBO_RESOURCE_PATH=/home/ros/docker_simulation_ws/install/hunter_se_description/share/:/home/ros/docker_simulation_ws/install/scout_description/share/:/home/ros/docker_simulation_ws/install/gazebo_models/share/gazebo_models/world:/home/ros/docker_simulation_ws/install/gazebo_models/share/gazebo_models/models:/home/ros/docker_simulation_ws/install/softleg_description/share/
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all,graphics,display,video,utility,compute
+      - __NV_PRIME_RENDER_OFFLOAD=1
+      - __GLX_VENDOR_LIBRARY_NAME=nvidia
+      - IGN_GAZEBO_SYSTEM_PLUGIN_PATH=/home/ros/RGLGazeboPlugin/install/RGLServerPlugin:${IGN_GAZEBO_SYSTEM_PLUGIN_PATH:-}
+      
+    privileged: true  # Fixed spelling and removed duplicate
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      - ~/.bash_history:/home/ros/.bash_history
+      - ./docker_simulator/src/gazebo_models:/home/ros/docker_simulation_ws/src/gazebo_models
+      - ./docker_simulator/src/mulinex_description:/home/ros/docker_simulation_ws/src/mulinex_description
+      - ./docker_simulator/src/mulinex_ignition:/home/ros/docker_simulation_ws/src/mulinex_ignition
+      - ./docker_simulator/src/Omni_Mulinex_Joystic_OPC:/home/ros/docker_simulation_ws/src/Omni_Mulinex_Joystic_OPC
+      - ./docker_simulator/src/Pi3Hat_Controllers:/home/ros/docker_simulation_ws/src/Pi3Hat_Controllers
+      - ./docker_simulator/src/rbt_pd_cnt:/home/ros/docker_simulation_ws/src/rbt_pd_cnt
+      - ./docker_simulator/src/SoftLeg-Description:/home/ros/docker_simulation_ws/src/SoftLeg-Description
+      - ./docker_simulator/src/ugv_gazebo_sim:/home/ros/docker_simulation_ws/src/Pi3Hat_Conugv_gazebo_simtrollers
+      - ./SoftLeg_Controller_LimitCycles/rlg_quad_controller:/home/ros/docker_simulation_ws/src/rlg_quad_controller
+      - /dev/input:/dev/input
+      - /dev/dri:/dev/dri
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-modeset:/dev/nvidia-modeset
+      
+      
+      
+
+    # Command to source ROS2 environment and start shell
+    command: >
+      bash -c "
+        source /opt/ros/humble/setup.bash &&
+        echo 'ROS2 Jazzy environment loaded' &&
+        bash
+      "
+    # devices:
+    #   - /dev/dri:/dev/dri
+    #   - /dev/nvidia0:/dev/nvidia0
+    #   - /dev/nvidiactl:/dev/nvidiactl
+    #   - /dev/nvidia-modeset:/dev/nvidia-modeset
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+networks:
+  ros2_internal:
+    driver: bridge
+    

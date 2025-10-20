@@ -1,0 +1,6 @@
+[submodule "SoftLeg_Controller_LimitCycles"]
+	path = SoftLeg_Controller_LimitCycles
+	url = https://github.com/fcannoni/SoftLeg_Controller_LimitCycles.git
+[submodule "docker_simulator"]
+	path = docker_simulator
+	url = https://github.com/fcannoni/docker_simulator.git
